@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from onadata.settings.common import *
 
 
@@ -175,17 +176,23 @@ if 'RAVEN_DSN' in os.environ:
 
 POSTGIS_VERSION = (2, 1, 2)
 
+CELERYBEAT_SCHEDULE = {
+    # Periodically mark exports stuck in the "pending" state as "failed"
+    # See https://github.com/kobotoolbox/kobocat/issues/315
+    'log-stuck-exports-and-mark-failed': {
+        'task': 'onadata.apps.viewer.tasks.log_stuck_exports_and_mark_failed',
+        'schedule': timedelta(hours=6),
+    },
+}
+
 ### ISSUE 242 TEMPORARY FIX ###
 # See https://github.com/kobotoolbox/kobocat/issues/242
 ISSUE_242_MINIMUM_INSTANCE_ID = os.environ.get(
     'ISSUE_242_MINIMUM_INSTANCE_ID', None)
 if ISSUE_242_MINIMUM_INSTANCE_ID is not None:
-    from datetime import timedelta
-    CELERYBEAT_SCHEDULE = {
-        'fix-root-node-names': {
-            'task': 'onadata.apps.logger.tasks.fix_root_node_names',
-            'schedule': timedelta(hours=1),
-            'args': (int(ISSUE_242_MINIMUM_INSTANCE_ID),)
-        },
+    CELERYBEAT_SCHEDULE['fix-root-node-names'] = {
+        'task': 'onadata.apps.logger.tasks.fix_root_node_names',
+        'schedule': timedelta(hours=1),
+        'args': (int(ISSUE_242_MINIMUM_INSTANCE_ID),)
     }
 ###### END ISSUE 242 FIX ######
