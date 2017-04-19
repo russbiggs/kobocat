@@ -8,6 +8,7 @@ from bson import json_util, ObjectId
 from celery import task
 from dateutil import parser
 from django.conf import settings
+from django.contrib.gis.geos import WKTWriter
 from django.db import models
 from django.db.models.signals import post_save, pre_delete
 from django.utils.translation import ugettext as _
@@ -16,8 +17,8 @@ from onadata.apps.logger.models import Instance
 from onadata.apps.logger.models import Note
 from onadata.apps.restservice.utils import call_service
 from onadata.libs.utils.common_tags import ID, UUID, ATTACHMENTS, GEOLOCATION,\
-    SUBMISSION_TIME, MONGO_STRFTIME, BAMBOO_DATASET_ID, DELETEDAT, TAGS,\
-    NOTES, SUBMITTED_BY
+    GEOPOINTS, GEOTRACES, GEOSHAPES, SUBMISSION_TIME, MONGO_STRFTIME,\
+    BAMBOO_DATASET_ID, DELETEDAT, TAGS, NOTES, SUBMITTED_BY
 from onadata.libs.utils.decorators import apply_form_field_names
 from onadata.libs.utils.model_tools import queryset_iterator
 
@@ -248,7 +249,10 @@ class ParsedInstance(models.Model):
             ATTACHMENTS: _get_attachments_from_instance(self.instance),
             self.STATUS: self.instance.status,
             GEOLOCATION: [self.lat, self.lng],
-            SUBMISSION_TIME: self.instance.date_created.strftime(
+	    GEOPOINTS: self._get_geopoints(),
+            GEOTRACES: self._get_geotraces(),
+	    GEOSHAPES: self._get_geoshapes(),
+	    SUBMISSION_TIME: self.instance.date_created.strftime(
                 MONGO_STRFTIME),
             TAGS: list(self.instance.tags.names()),
             NOTES: self.get_notes(),
@@ -312,6 +316,28 @@ class ParsedInstance(models.Model):
         if self.instance.point:
             self.lat = self.instance.point.y
             self.lng = self.instance.point.x
+
+
+    def _get_geopoints(self):
+	wkt_w = WKTWriter()
+	if len(self.instance.points):
+	    points = [wkt_w.write(pts) for pts in self.instance.points]
+	    gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(points))
+	    return gc
+
+    def _get_geotraces(self):
+        wkt_w = WKTWriter()
+        if len(self.instance.traces):
+            traces = [wkt_w.write(ls) for ls in self.instance.traces]
+            gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(traces))
+            return gc
+
+    def _get_geoshapes(self):
+	wkt_w = WKTWriter()
+	if len(self.instance.shapes):
+	    shapes = [wkt_w.write(shps) for shps in self.instance.shapes]
+	    gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(shapes))
+	    return gc
 
     def save(self, async=False, *args, **kwargs):
         # start/end_time obsolete: originally used to approximate for

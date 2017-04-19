@@ -31,6 +31,10 @@ UUID = u"_uuid"
 USERFORM_ID = u"_userform_id"
 DATE = u"_date"
 GEOLOCATION = u"_geolocation"
+GEOPOINTS = u"_geopoints"
+GEOTRACES = u"_geotraces"
+GEOSHAPES = u"_geoshapes"
+
 SUBMISSION_TIME = u'_submission_time'
 DELETEDAT = u"_deleted_at"  # marker for delete surveys
 BAMBOO_DATASET_ID = u"_bamboo_dataset_id"

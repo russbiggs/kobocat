@@ -6,7 +6,8 @@ from django.contrib.gis.db import models
 from django.db.models.signals import post_save
 from django.db.models.signals import post_delete
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import GeometryCollection, Point
+from django.contrib.gis.geos import GeometryCollection, Point, LineString,\
+Polygon
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 from jsonfield import JSONField
@@ -123,7 +124,7 @@ class Instance(models.Model):
                               default=u'submitted_via_web')
     uuid = models.CharField(max_length=249, default=u'')
 
-    # store an geographic objects associated with this instance
+    # store geographic objects associated with this instance
     geom = models.GeometryCollectionField(null=True)
     objects = models.GeoManager()
 
@@ -153,9 +154,12 @@ class Instance(models.Model):
         xform = self.xform
         data_dictionary = xform.data_dictionary()
         geo_xpaths = data_dictionary.geopoint_xpaths()
+	geotrace_xpaths = data_dictionary.geotrace_xpaths()
+	geoshape_xpaths = data_dictionary.geoshape_xpaths()
         doc = self.get_dict()
         points = []
-
+	traces = []
+	shapes = []
         if len(geo_xpaths):
             for xpath in geo_xpaths:
                 geometry = [float(s) for s in doc.get(xpath, u'').split()]
@@ -168,7 +172,20 @@ class Instance(models.Model):
                 xform.instances_with_geopoints = True
                 xform.save()
 
-            self.geom = GeometryCollection(points)
+	if len(geotrace_xpaths):
+            for xpath in geotrace_xpaths:
+                geotraces = [[float(t) for t in s.split()] for s in doc.get(xpath, u'').split(';')]
+                if len(geotraces):
+                    traces.append(LineString([Point(s[0:2]) for s in geotraces]))
+
+	if len(geoshape_xpaths):
+	   for xpath in geoshape_xpaths:
+		geoshapes = [[float(t) for t in s.split()] for s in doc.get(xpath, u'').split(';')]
+		if len(geoshapes):
+		    shapes.append(Polygon([Point(s[0:2]) for s in geoshapes]))
+
+	geos = points + traces + shapes
+        self.geom = GeometryCollection(geos)
 
     def _set_json(self):
         doc = self.get_dict()
@@ -255,6 +272,39 @@ class Instance(models.Model):
 
         if gc and len(gc):
             return gc[0]
+
+    @property
+    def points(self):
+	gc = self.geom
+
+	if gc and len(gc):
+	    points = []
+	    for item in gc:
+		if item.geom_type == 'Point':
+		    points.append(item)
+	    return points
+
+    @property
+    def traces(self):
+	gc = self.geom
+
+	if gc and len(gc):
+	    traces = []
+	    for item in gc:
+		if item.geom_type == 'LineString':
+		    traces.append(item)
+	    return traces
+
+    @property
+    def shapes(self):
+	gc = self.geom
+
+	if gc and len(gc):
+	    shapes = []
+	    for item in gc:
+		if item.geom_type == 'Polygon':
+		    shapes.append(item)
+            return shapes
 
     def save(self, *args, **kwargs):
         force = kwargs.get('force')

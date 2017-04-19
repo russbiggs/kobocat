@@ -218,6 +218,24 @@ class DataDictionary(XForm):
 
         return geo_xpaths
 
+    def geotrace_xpaths(self):
+	geotrace_xpaths = []
+
+	for e in self.get_survey_elements():
+	    if e.bind.get(u'type') == u'geotrace':
+		geotrace_xpaths.append(e.get_abbreviated_xpath())
+
+	return geotrace_xpaths
+
+    def geoshape_xpaths(self):
+	geoshape_xpaths = []
+
+	for e in self.get_survey_elements():
+		if e.bind.get(u'type') == u'geoshape':
+		    geoshape_xpaths.append(e.get_abbreviated_xpath())
+
+	return geoshape_xpaths
+
     def xpath_of_first_geopoint(self):
         geo_xpaths = self.geopoint_xpaths()
 
