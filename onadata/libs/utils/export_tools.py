@@ -3,6 +3,7 @@ from datetime import datetime, date
 import json
 import os
 import re
+import shapefile
 import six
 import tempfile
 from urlparse import urlparse
@@ -930,6 +931,27 @@ def kml_export_data(id_string, user):
 
 
     return data_for_template
+
+def pts_shp_export_data(id_string, user):
+    instances = Instance.objects.filter(
+        xform__user=user,
+        xform__id_string=id_string,
+        deleted_at=None,
+        geom__isnull=False
+    ).order_by('id')
+    data_list = []
+    for instance in instances:
+        point_list = []
+        for point in instance.points:
+            coords = [coord for coord in point]
+            point_list.append(coords)
+        data_list.append({
+            'name': instance.xform.title,
+            'id': instance.uuid,
+            'points':point_list
+        })
+
+    return data_list
 
 
 def _get_records(instances):

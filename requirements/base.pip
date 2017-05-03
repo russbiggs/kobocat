@@ -25,6 +25,7 @@ django-reversion==2.0.8
 xlrd==0.9.3
 xlwt==0.7.5
 openpyxl==2.0.5
+pyshp==1.2.10
 celery==3.1.16
 django-celery==3.1.16
 librabbitmq==1.5.2

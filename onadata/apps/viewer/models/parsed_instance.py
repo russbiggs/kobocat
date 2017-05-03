@@ -249,10 +249,10 @@ class ParsedInstance(models.Model):
             ATTACHMENTS: _get_attachments_from_instance(self.instance),
             self.STATUS: self.instance.status,
             GEOLOCATION: [self.lat, self.lng],
-	    GEOPOINTS: self._get_geopoints(),
+	        GEOPOINTS: self._get_geopoints(),
             GEOTRACES: self._get_geotraces(),
-	    GEOSHAPES: self._get_geoshapes(),
-	    SUBMISSION_TIME: self.instance.date_created.strftime(
+	        GEOSHAPES: self._get_geoshapes(),
+	        SUBMISSION_TIME: self.instance.date_created.strftime(
                 MONGO_STRFTIME),
             TAGS: list(self.instance.tags.names()),
             NOTES: self.get_notes(),
@@ -319,11 +319,11 @@ class ParsedInstance(models.Model):
 
 
     def _get_geopoints(self):
-	wkt_w = WKTWriter()
-	if len(self.instance.points):
-	    points = [wkt_w.write(pts) for pts in self.instance.points]
-	    gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(points))
-	    return gc
+        wkt_w = WKTWriter()
+        if len(self.instance.points):
+            points = [wkt_w.write(pts) for pts in self.instance.points]
+            gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(points))
+            return gc
 
     def _get_geotraces(self):
         wkt_w = WKTWriter()
@@ -333,11 +333,11 @@ class ParsedInstance(models.Model):
             return gc
 
     def _get_geoshapes(self):
-	wkt_w = WKTWriter()
-	if len(self.instance.shapes):
-	    shapes = [wkt_w.write(shps) for shps in self.instance.shapes]
-	    gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(shapes))
-	    return gc
+        wkt_w = WKTWriter()
+        if len(self.instance.shapes):
+            shapes = [wkt_w.write(shps) for shps in self.instance.shapes]
+            gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(shapes))
+            return gc
 
     def save(self, async=False, *args, **kwargs):
         # start/end_time obsolete: originally used to approximate for

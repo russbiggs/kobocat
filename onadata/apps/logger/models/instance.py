@@ -154,12 +154,12 @@ class Instance(models.Model):
         xform = self.xform
         data_dictionary = xform.data_dictionary()
         geo_xpaths = data_dictionary.geopoint_xpaths()
-	geotrace_xpaths = data_dictionary.geotrace_xpaths()
-	geoshape_xpaths = data_dictionary.geoshape_xpaths()
+        geotrace_xpaths = data_dictionary.geotrace_xpaths()
+        geoshape_xpaths = data_dictionary.geoshape_xpaths()
         doc = self.get_dict()
         points = []
-	traces = []
-	shapes = []
+        traces = []
+        shapes = []
         if len(geo_xpaths):
             for xpath in geo_xpaths:
                 geometry = [float(s) for s in doc.get(xpath, u'').split()]
@@ -172,19 +172,19 @@ class Instance(models.Model):
                 xform.instances_with_geopoints = True
                 xform.save()
 
-	if len(geotrace_xpaths):
+        if len(geotrace_xpaths):
             for xpath in geotrace_xpaths:
                 geotraces = [[float(t) for t in s.split()] for s in doc.get(xpath, u'').split(';')]
                 if len(geotraces):
                     traces.append(LineString([Point(s[0:2]) for s in geotraces]))
 
-	if len(geoshape_xpaths):
-	   for xpath in geoshape_xpaths:
-		geoshapes = [[float(t) for t in s.split()] for s in doc.get(xpath, u'').split(';')]
-		if len(geoshapes):
-		    shapes.append(Polygon([Point(s[0:2]) for s in geoshapes]))
+        if len(geoshape_xpaths):
+            for xpath in geoshape_xpaths:
+                geoshapes = [[float(t) for t in s.split()] for s in doc.get(xpath, u'').split(';')]
+                if len(geoshapes):
+                    shapes.append(Polygon([Point(s[0:2]) for s in geoshapes]))
 
-	geos = points + traces + shapes
+        geos = points + traces + shapes
         self.geom = GeometryCollection(geos)
 
     def _set_json(self):
@@ -275,35 +275,35 @@ class Instance(models.Model):
 
     @property
     def points(self):
-	gc = self.geom
+        gc = self.geom
 
-	if gc and len(gc):
-	    points = []
-	    for item in gc:
-		if item.geom_type == 'Point':
-		    points.append(item)
-	    return points
+        if gc and len(gc):
+            points = []
+            for item in gc:
+                if item.geom_type == 'Point':
+                    points.append(item)
+        return points
 
     @property
     def traces(self):
-	gc = self.geom
+        gc = self.geom
 
-	if gc and len(gc):
-	    traces = []
-	    for item in gc:
-		if item.geom_type == 'LineString':
-		    traces.append(item)
-	    return traces
+        if gc and len(gc):
+            traces = []
+            for item in gc:
+                if item.geom_type == 'LineString':
+                    traces.append(item)
+            return traces
 
     @property
     def shapes(self):
-	gc = self.geom
+        gc = self.geom
 
-	if gc and len(gc):
-	    shapes = []
-	    for item in gc:
-		if item.geom_type == 'Polygon':
-		    shapes.append(item)
+        if gc and len(gc):
+            shapes = []
+            for item in gc:
+                if item.geom_type == 'Polygon':
+                    shapes.append(item)
             return shapes
 
     def save(self, *args, **kwargs):
