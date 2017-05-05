@@ -4,6 +4,7 @@ import json
 import os
 import re
 import shapefile
+import StringIO
 import six
 import tempfile
 from urlparse import urlparse
@@ -15,6 +16,7 @@ from django.core.files.base import File
 from django.core.files.temp import NamedTemporaryFile
 from django.core.files.storage import get_storage_class
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.utils.text import slugify
 from openpyxl.date_time import SharedDate
@@ -920,18 +922,19 @@ def kml_export_data(id_string, user):
     data_for_template = []
 
     for instance in instances:
-        point = instance.point
-        if point:
-            data_for_template.append({
-                'name': id_string,
-                'id': instance.uuid,
-                'lat': point.y,
-                'lng': point.x,
-                })
-
+        points = instance.points
+        if len(points):
+            for point in points:
+                data_for_template.append({
+                    'name': id_string,
+                    'id': instance.uuid,
+                    'lat': point.y,
+                    'lng': point.x,
+                    })
 
     return data_for_template
 
+'''
 def pts_shp_export_data(id_string, user):
     instances = Instance.objects.filter(
         xform__user=user,
@@ -952,6 +955,75 @@ def pts_shp_export_data(id_string, user):
         })
 
     return data_list
+
+#def generate_shp_export( export_type, extension, username, id_string, export_id=None,filter_query=None):
+def generate_shp_export(user):
+    test =[{'lat':12.12,'lng':13.00,'id':1},{'lat':15.69,'lng':14.23,'id':2}]
+
+    filename = user+ ".shp"
+    w = shapefile.Writer(shapefile.POINT)
+    w.field('instance_id')
+    w.field('SECOND_FLD','C','40')
+    for pt in test:
+        w.point(pt['lat'],pt['lng'])
+        w.record(str(pt['id']), 'Point')
+    w.save(filename)
+    shp_list = ['.shp','.shx','.dbf']
+    filenames = [user + ext for ext in shp_list]
+    zip_subdir = "myshp"
+    zip_filename = "%s.zip" % zip_subdir
+
+    s = StringIO.StringIO()
+    zf = ZipFile(s, "w")
+
+    for fpath in filenames:
+        fdir, fname = os.path.split(fpath)
+        zip_path = os.path.join(zip_subdir, fname)
+        zf.write(fpath, zip_path)
+    zf.close()
+    response = HttpResponse(s.getvalue(), content_type = "application/x-zip-compressed")
+
+    response['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
+    return response
+
+    xform = XForm.objects.get(user__username=username, id_string=id_string)
+    response = render_to_response(
+        'survey.kml', {'data': kml_export_data(id_string, user)})
+
+    basename = "%s_%s" % (id_string,
+                          datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
+    filename = basename + "." + extension
+    file_path = os.path.join(
+        username,
+        'exports',
+        id_string,
+        export_type,
+        filename)
+
+    storage = get_storage_class()()
+    temp_file = NamedTemporaryFile(suffix=extension)
+    temp_file.write(response.content)
+    temp_file.seek(0)
+    export_filename = storage.save(
+        file_path,
+        File(temp_file, file_path))
+    temp_file.close()
+
+    dir_name, basename = os.path.split(export_filename)
+
+    # get or create export object
+    if(export_id):
+        export = Export.objects.get(id=export_id)
+    else:
+        export = Export.objects.create(xform=xform, export_type=export_type)
+
+    export.filedir = dir_name
+    export.filename = basename
+    export.internal_status = Export.SUCCESSFUL
+    export.save()
+
+    return export    
+    '''
 
 
 def _get_records(instances):

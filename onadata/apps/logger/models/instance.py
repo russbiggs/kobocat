@@ -282,7 +282,7 @@ class Instance(models.Model):
             for item in gc:
                 if item.geom_type == 'Point':
                     points.append(item)
-        return points
+            return points
 
     @property
     def traces(self):
