@@ -271,7 +271,8 @@ class Instance(models.Model):
         gc = self.geom
 
         if gc and len(gc):
-            return gc[0]
+            if gc[0].geom_type == 'Point':
+                return gc[0]
 
     @property
     def points(self):
