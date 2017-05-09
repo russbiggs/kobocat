@@ -2,43 +2,88 @@
 <kml xmlns="http://earth.google.com/kml/2.2">
   <Document>
     <name>{{data.name}}</name>
-    <Style id="sh_red-circle">
-      <IconStyle>
-        <scale>1.3</scale>
-        <Icon>
-          <href>http://maps.google.com/mapfiles/kml/paddle/red-circle.png</href>
-        </Icon>
-        <hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
-      </IconStyle>
-      <ListStyle>
-        <ItemIcon>
-          <href>http://maps.google.com/mapfiles/kml/paddle/red-circle-lv.png</href>
-        </ItemIcon>
-      </ListStyle>
-    </Style>
-    <StyleMap id="msn_red-circle">
-      <Pair>
-        <key>normal</key>
-        <styleUrl>#sn_red-circle</styleUrl>
-      </Pair>
-      <Pair>
-        <key>highlight</key>
-        <styleUrl>#sh_red-circle</styleUrl>
-      </Pair>
-    </StyleMap>
+        <Style id="swca-kobo">
+          <IconStyle>
+            <scale>1.3</scale>
+            <Icon>
+              <href>http://maps.google.com/mapfiles/kml/paddle/red-circle.png</href>
+            </Icon>
+            <hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+          </IconStyle>
+          <ListStyle>
+            <ItemIcon>
+              <href>http://maps.google.com/mapfiles/kml/paddle/red-circle-lv.png</href>
+            </ItemIcon>
+          </ListStyle>
+          <PolyStyle>
+            <color>7f0000ff</color>
+            <colorMode>normal</colorMode>
+            <fill>1</fill>
+            <outline>1</outline>
+          </PolyStyle>
+          <LineStyle>
+            <color>7f0000ff</color>
+            <width>4</width>
+          </LineStyle>
+        </Style>
+        <StyleMap id="msn_red-circle">
+          <Pair>
+            <key>normal</key>
+            <styleUrl>#swca-kobo</styleUrl>
+          </Pair>
+          <Pair>
+            <key>highlight</key>
+            <styleUrl>#swca-kobo</styleUrl>
+          </Pair>
+        </StyleMap>
 
     {% for d in data %}
+    {% if d.type == 'point'%}
     <Placemark>
       <description>
         Survey Instance: {{d.id}}
       </description>
-      <styleUrl>#sh_red-circle</styleUrl>
+      <styleUrl>#swca-kobo</styleUrl>
       <Point>
         <coordinates>
           {{d.lng}}, {{d.lat}}
         </coordinates>
       </Point>
     </Placemark>
+    {% elif d.type == 'shape' %}
+    <Placemark>
+      <description>
+        Survey Instance: {{d.id}}
+      </description>
+    <styleUrl>#swca-kobo</styleUrl>
+      <Polygon>
+        <altitudeMode>clampToGround</altitudeMode>
+        <outerBoundaryIs>
+          <LinearRing>
+            <altitudeMode>clampToGround</altitudeMode>
+            <coordinates>
+            {% for shape in d.shape %}{% for coord in shape %}{{coord.1}},{{coord.0}} {% endfor %}{% endfor %}
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    {% elif d.type == 'trace' %}
+    <Placemark>
+      <description>
+        Survey Instance: {{d.id}}
+      </description>
+      <styleUrl>#swca-kobo</styleUrl>
+      <LineString>
+        <extrude>1</extrude>
+        <tessellate>1</tessellate>
+        <altitudeMode>clampToGround</altitudeMode>
+        <coordinates> 
+          {% for coord in d.trace %}{{coord.1}},{{coord.0}} {% endfor %}
+        </coordinates>
+      </LineString>
+    </Placemark>
+    {% endif %}
     {% endfor %}
   </Document>
 </kml>

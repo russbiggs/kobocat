@@ -31,9 +31,7 @@ UUID = u"_uuid"
 USERFORM_ID = u"_userform_id"
 DATE = u"_date"
 GEOLOCATION = u"_geolocation"
-GEOPOINTS = u"_geopoints"
-GEOTRACES = u"_geotraces"
-GEOSHAPES = u"_geoshapes"
+GEOMETRY = u"_geometry"
 
 SUBMISSION_TIME = u'_submission_time'
 DELETEDAT = u"_deleted_at"  # marker for delete surveys

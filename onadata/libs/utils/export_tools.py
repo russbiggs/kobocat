@@ -923,14 +923,33 @@ def kml_export_data(id_string, user):
 
     for instance in instances:
         points = instance.points
+        traces = instance.traces
+        shapes = instance.shapes
         if len(points):
             for point in points:
                 data_for_template.append({
+                    'type': 'point',
                     'name': id_string,
                     'id': instance.uuid,
                     'lat': point.y,
                     'lng': point.x,
                     })
+        if len(traces):
+            for trace in traces:
+                data_for_template.append({
+                    'type': 'trace',
+                    'name': id_string,
+                    'id': instance.uuid,
+                    'trace': trace
+                })
+        if len(shapes):
+            for shape in shapes:
+                data_for_template.append({
+                    'type': 'shape',
+                    'name': id_string,
+                    'id': instance.uuid,
+                    'shape': shape
+                })
 
     return data_for_template
 
