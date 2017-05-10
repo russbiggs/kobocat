@@ -62,7 +62,7 @@
           <LinearRing>
             <altitudeMode>clampToGround</altitudeMode>
             <coordinates>
-            {% for shape in d.shape %}{% for coord in shape %}{{coord.1}},{{coord.0}} {% endfor %}{% endfor %}
+            {% for shape in d.shape %}{% for coord in shape %}{{coord.0}},{{coord.1}} {% endfor %}{% endfor %}
             </coordinates>
           </LinearRing>
         </outerBoundaryIs>
@@ -79,7 +79,7 @@
         <tessellate>1</tessellate>
         <altitudeMode>clampToGround</altitudeMode>
         <coordinates> 
-          {% for coord in d.trace %}{{coord.1}},{{coord.0}} {% endfor %}
+          {% for coord in d.trace %}{{coord.0}},{{coord.1}} {% endfor %}
         </coordinates>
       </LineString>
     </Placemark>
