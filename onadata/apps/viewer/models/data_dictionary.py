@@ -215,7 +215,7 @@ class DataDictionary(XForm):
         for e in self.get_survey_elements():
             if e.bind.get(u'type') == u'geopoint':
                 geo_xpaths.append(e.get_abbreviated_xpath())
-
+        print "geo_xpaths: " + str(geo_xpaths)
         return geo_xpaths
 
     def geotrace_xpaths(self):
@@ -224,7 +224,7 @@ class DataDictionary(XForm):
         for e in self.get_survey_elements():
             if e.bind.get(u'type') == u'geotrace':
                 geotrace_xpaths.append(e.get_abbreviated_xpath())
-
+        print "geo_traces: " + str(geotrace_xpaths)
         return geotrace_xpaths
 
     def geoshape_xpaths(self):

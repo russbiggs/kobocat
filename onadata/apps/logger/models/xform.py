@@ -90,6 +90,8 @@ class XForm(BaseModel):
     uuid_bind_location = 4
     bamboo_dataset = models.CharField(max_length=60, default=u'')
     instances_with_geopoints = models.BooleanField(default=False)
+    instances_with_geotraces = models.BooleanField(default=False)
+    instances_with_geoshapes = models.BooleanField(default=False)
     num_of_submissions = models.IntegerField(default=0)
 
     tags = TaggableManager()
@@ -127,6 +129,14 @@ class XForm(BaseModel):
     @property
     def has_instances_with_geopoints(self):
         return self.instances_with_geopoints
+    
+    @property
+    def has_instances_with_geotraces(self):
+        return self.instances_with_geotraces
+
+    @property
+    def has_instances_with_geoshapes(self):
+        return self.instances_with_geoshapes
 
     def _set_id_string(self):
         matches = self.instance_id_regex.findall(self.xml)

@@ -168,21 +168,30 @@ class Instance(models.Model):
                     lat, lng = geometry[0:2]
                     points.append(Point(lng, lat))
 
-            if not xform.instances_with_geopoints and len(points):
-                xform.instances_with_geopoints = True
-                xform.save()
-
         if len(geotrace_xpaths):
             for xpath in geotrace_xpaths:
                 geotraces = [[float(t) for t in s.split()] for s in doc.get(xpath, u'').split(';')]
-                if len(geotraces):
-                    traces.append(LineString([Point((s[1],s[0])) for s in geotraces]))
+                if len(geotraces) > 1:
+                    traces.append(LineString([Point((s[1], s[0])) for s in geotraces]))
 
         if len(geoshape_xpaths):
             for xpath in geoshape_xpaths:
                 geoshapes = [[float(t) for t in s.split()] for s in doc.get(xpath, u'').split(';')]
-                if len(geoshapes):
-                    shapes.append(Polygon([Point((s[1],s[0])) for s in geoshapes]))
+                if len(geoshapes) > 1:
+                    shapes.append(Polygon([Point((s[1], s[0])) for s in geoshapes]))
+
+        xform_save = False
+        if not xform.instances_with_geopoints and len(points):
+            xform_save = True
+            xform.instances_with_geopoints = True
+        if not xform.instances_with_geotraces and len(traces):
+            xform_save = True
+            xform.instances_with_geotraces = True
+        if not xform.instances_with_geoshapes and len(shapes):
+            xform_save = True
+            xform.instances_with_geoshapes = True
+        if xform_save:
+            xform.save()
 
         geos = points + traces + shapes
         self.geom = GeometryCollection(geos)

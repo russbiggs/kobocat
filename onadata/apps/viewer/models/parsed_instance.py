@@ -17,7 +17,7 @@ from onadata.apps.logger.models import Instance
 from onadata.apps.logger.models import Note
 from onadata.apps.restservice.utils import call_service
 from onadata.libs.utils.common_tags import ID, UUID, ATTACHMENTS, GEOLOCATION,\
-    GEOMETRY, SUBMISSION_TIME, MONGO_STRFTIME,\
+    GEOPOINTS, GEOTRACES, GEOSHAPES, SUBMISSION_TIME, MONGO_STRFTIME,\
     BAMBOO_DATASET_ID, DELETEDAT, TAGS, NOTES, SUBMITTED_BY
 from onadata.libs.utils.decorators import apply_form_field_names
 from onadata.libs.utils.model_tools import queryset_iterator
@@ -252,7 +252,9 @@ class ParsedInstance(models.Model):
             ATTACHMENTS: _get_attachments_from_instance(self.instance),
             self.STATUS: self.instance.status,
             GEOLOCATION: [self.lat, self.lng],
-            GEOMETRY: self._get_geometry(),
+            GEOPOINTS: self._get_geopoints(),
+            GEOTRACES: self._get_geotraces(),
+            GEOSHAPES: self._get_geoshapes(),
 	        SUBMISSION_TIME: self.instance.date_created.strftime(
                 MONGO_STRFTIME),
             TAGS: list(self.instance.tags.names()),
@@ -318,6 +320,7 @@ class ParsedInstance(models.Model):
             self.lat = self.instance.point.y
             self.lng = self.instance.point.x
 
+    #currently unused
     def _get_geometry(self):
         wkt_w = WKTWriter()
         if len(self.instance.geom):
@@ -325,7 +328,6 @@ class ParsedInstance(models.Model):
             gc = wkt_w.write(self.instance.geom)
             return gc
 
-    #currently unused
     def _get_geopoints(self):
         wkt_w = WKTWriter()
         if len(self.instance.points):
@@ -333,7 +335,6 @@ class ParsedInstance(models.Model):
             gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(points))
             return gc
 
-    #currently unused
     def _get_geotraces(self):
         wkt_w = WKTWriter()
         if len(self.instance.traces):
@@ -341,7 +342,7 @@ class ParsedInstance(models.Model):
             gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(traces))
             return gc
 
-    #currently unused
+
     def _get_geoshapes(self):
         wkt_w = WKTWriter()
         if len(self.instance.shapes):
