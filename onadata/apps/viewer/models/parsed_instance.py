@@ -330,22 +330,21 @@ class ParsedInstance(models.Model):
 
     def _get_geopoints(self):
         wkt_w = WKTWriter()
-        if len(self.instance.points):
+        if self.instance.points and len(self.instance.points):
             points = [wkt_w.write(pts) for pts in self.instance.points]
             gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(points))
             return gc
 
     def _get_geotraces(self):
         wkt_w = WKTWriter()
-        if len(self.instance.traces):
+        if self.instance.traces and len(self.instance.traces):
             traces = [wkt_w.write(ls) for ls in self.instance.traces]
             gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(traces))
             return gc
 
-
     def _get_geoshapes(self):
         wkt_w = WKTWriter()
-        if len(self.instance.shapes):
+        if self.instance.shapes and len(self.instance.shapes):
             shapes = [wkt_w.write(shps) for shps in self.instance.shapes]
             gc = 'GEOMETRYCOLLECTION(%s)' %(','.join(shapes))
             return gc
