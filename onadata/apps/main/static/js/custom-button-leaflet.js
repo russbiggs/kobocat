@@ -1,10 +1,12 @@
-var layerButtonControl = function(markerLayer, hexLayer) {
+var layerButtonControl = function(markerLayer, lineLayer, polygonLayer, hexLayer) {
     var control = new (L.Control.extend({
         options: { position: 'topright' },
 
         onAdd: function (map) {
             var container = L.DomUtil.create('div', 'layer-button-container');
             this._createButton('layer-markerButton', markerLayer, container);
+            this._createButton('layer-lineButton', lineLayer, container);
+            this._createButton('layer-polygonButton', polygonLayer, container);
             this._createButton('layer-hexbinButton', hexLayer, container);
             return container;
         },
