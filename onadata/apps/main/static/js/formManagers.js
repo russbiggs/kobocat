@@ -4,7 +4,14 @@ var constants = {
     //formhub query syntax constants
     START: "start", LIMIT: "limit", COUNT: "count", FIELDS: "fields",
     //
-    GEOLOCATION: "_geolocation"
+    GEOLOCATION: "_geolocation",
+    //
+    GEOPOINTS: "_geopoints",
+    //
+    GEOTRACES: "_geotraces",
+    //
+    GEOSHAPES: "_geoshapes"
+
 };
 
 // used to load and manage form questions
@@ -13,6 +20,8 @@ FormJSONManager = function(url, callback)
     this.url = url;
     this.callback = callback;
     this.geopointQuestions = [];
+    this.geotraceQuestions = [];
+    this.geoshapeQuestions = [];
     this.selectOneQuestions = [];
     this.supportedLanguages = [];
     this.questions = {};
@@ -66,6 +75,11 @@ FormJSONManager.prototype._parseQuestions = function(questionData, parentQuestio
             this.selectOneQuestions.push(question);
         if(question[constants.TYPE] == "geopoint" || question[constants.TYPE] == "gps")
             this.geopointQuestions.push(question);
+        if(question[constants.TYPE] == "geotrace")
+            this.geotraceQuestions.push(question);
+        if(question[constants.TYPE] == "geoshape")
+            this.geoshapeQuestions.push(question);
+
     }
 };
 
@@ -101,6 +115,18 @@ FormJSONManager.prototype.getGeoPointQuestion = function()
     return null;
 };
 
+FormJSONManager.prototype.getGeoTraceQuestion = function()
+{
+    if(this.geotraceQuestions.length > 0)
+        return this.geotraceQuestions[0];
+    return null;
+};
+FormJSONManager.prototype.getGeoShapeQuestion = function()
+{
+    if(this.geoshapeQuestions.length > 0)
+        return this.geoshapeQuestions[0];
+    return null;
+};
 FormJSONManager.prototype.getQuestionByName = function(name)
 {
     return this.questions[name];
@@ -290,21 +316,66 @@ FormResponseManager.prototype.clearSelectOneFilterResponses = function(name)
 FormResponseManager.prototype._toGeoJSON = function()
 {
     var features = [];
-    var geopointQuestionName = constants.GEOLOCATION;
-    _(this.responses).each(function (response) {
-        var gps = response[geopointQuestionName];
-        if(gps && gps[0] && gps[1])
-        {
-            var lat = gps[0];
-            var lng = gps[1];
+    //var geopointQuestionName = constants.GEOLOCATION;
+    var geopointsQuestionName = constants.GEOPOINTS;
 
-            var geometry = {"type":"Point", "coordinates": [lng, lat]};
-            var feature = {"type": "Feature", "id": response._id, "geometry":geometry, "properties":response};
+    _(this.responses).each(function (response) {
+        //var gps = response[geopointQuestionName];
+        var geopoints = response[geopointsQuestionName];
+
+        if(geopoints)
+        {
+            var feature = {"type": "Feature", "id": response._id, "geometry":parse(geopoints), "properties":response};
+            features.push(feature);
+        }
+        // if(gps && gps[0] && gps[1])
+        // {
+        //     var lat = gps[0];
+        //     var lng = gps[1];
+        //
+        //     var geometry = {"type":"Point", "coordinates": [lng, lat]};
+        //     var feature = {"type": "Feature", "id": response._id, "geometry":geometry, "properties":response};
+        //     features.push(feature);
+        // }
+    });
+
+    this.geoJSON = {"type":"FeatureCollection", "features":features};
+};
+
+FormResponseManager.prototype._geoTracesToGeoJSON = function()
+{
+    var features = [];
+    var geotracesQuestionName = constants.GEOTRACES;
+
+    _(this.responses).each(function (response) {
+        var geotraces = response[geotracesQuestionName];
+
+        if(geotraces)
+        {
+            var feature = {"type": "Feature", "id": response._id, "geometry":parse(geotraces), "properties":response};
             features.push(feature);
         }
     });
 
-    this.geoJSON = {"type":"FeatureCollection", "features":features};
+    this.geotracesGeoJSON = {"type":"FeatureCollection", "features":features};
+};
+
+FormResponseManager.prototype._geoShapesToGeoJSON = function()
+{
+    var features = [];
+    var geoshapesQuestionName = constants.GEOSHAPES;
+
+    _(this.responses).each(function (response) {
+        var geoshapes = response[geoshapesQuestionName];
+
+        if(geoshapes)
+        {
+            var feature = {"type": "Feature", "id": response._id, "geometry":parse(geoshapes), "properties":response};
+            features.push(feature);
+        }
+    });
+
+    this.geoshapesGeoJSON = {"type":"FeatureCollection", "features":features};
 };
 
 /// this cannot be called before the form is loaded as we rely on the form to determine the gps field
@@ -368,6 +439,22 @@ FormResponseManager.prototype.getAsGeoJSON = function(rebuildFlag)
         this._toGeoJSON();
 
     return this.geoJSON;
+};
+
+FormResponseManager.prototype.getGeoTracesAsGeoJSON = function(rebuildFlag)
+{
+    if(!this.geotracesGeoJSON || rebuildFlag)
+        this._geoTracesToGeoJSON();
+
+    return this.geotracesGeoJSON;
+};
+
+FormResponseManager.prototype.getGeoShapesAsGeoJSON = function(rebuildFlag)
+{
+    if(!this.geoshapesGeoJSON || rebuildFlag)
+        this._geoShapesToGeoJSON();
+
+    return this.geoshapesGeoJSON;
 };
 
 FormResponseManager.prototype.getAsHexbinGeoJSON = function(latLongFilter)
