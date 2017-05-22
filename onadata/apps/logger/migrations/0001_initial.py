@@ -95,6 +95,8 @@ class Migration(migrations.Migration):
                 ('uuid', models.CharField(default='', max_length=32)),
                 ('bamboo_dataset', models.CharField(default='', max_length=60)),
                 ('instances_with_geopoints', models.BooleanField(default=False)),
+                ('instances_with_geotraces', models.BooleanField(default=False)),
+                ('instances_with_geoshapes', models.BooleanField(default=False)),
                 ('num_of_submissions', models.IntegerField(default=0)),
                 ('tags', taggit.managers.TaggableManager(to='taggit.Tag', through='taggit.TaggedItem', help_text='A comma-separated list of tags.', verbose_name='Tags')),
                 ('user', models.ForeignKey(related_name='xforms', to=settings.AUTH_USER_MODEL, null=True)),
