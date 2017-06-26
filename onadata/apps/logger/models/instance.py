@@ -170,13 +170,13 @@ class Instance(models.Model):
 
         if len(geotrace_xpaths):
             for xpath in geotrace_xpaths:
-                geotraces = [[float(t) for t in s.split()] for s in doc.get(xpath, u'').split(';')]
+                geotraces = [[float(t) for t in s.split()] for s in doc.get(xpath, u'').split(';') if s]
                 if len(geotraces) > 1:
                     traces.append(LineString([Point((s[1], s[0])) for s in geotraces]))
 
         if len(geoshape_xpaths):
             for xpath in geoshape_xpaths:
-                geoshapes = [[float(t) for t in s.split()] for s in doc.get(xpath, u'').split(';')]
+                geoshapes = [[float(t) for t in s.split()] for s in doc.get(xpath, u'').split(';') if s]
                 if len(geoshapes) > 1:
                     shapes.append(Polygon([Point((s[1], s[0])) for s in geoshapes]))
 
